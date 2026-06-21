@@ -7,7 +7,7 @@ from llama_index.core.workflow import (
 )
 from llama_index.core.schema import NodeWithScore
 from llama_index.llms.openrouter import OpenRouter
-from engine import get_index
+from engine import get_index, DEMO_MODE
 import os
 import json
 import re
@@ -33,7 +33,7 @@ class VerifyEvent(Event):
 class SafeGuardWorkflow(Workflow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.llm = OpenRouter(
+        self.llm = None if DEMO_MODE else OpenRouter(
             model="google/gemini-2.5-flash",
             api_key=os.getenv("OPENROUTER_API_KEY")
         )
