@@ -4,7 +4,7 @@
 
 ## 🚀 Key Features
 
-- **Multi-Agent Workflow**: Utilizes a specialized workflow where answers are generated and then rigorously verified by a "Critic" agent.
+- **Generator-Critic Pipeline**: A sequential workflow where a Generator step drafts an answer and a Critic step independently re-checks it against the retrieved context, triggering an automatic rewrite if unsupported claims are found.
 - **Hallucination Detection**: Automatically identifies and corrects facts that are not supported by the underlying knowledge base.
 - **Strict Grounding**: Only answers based on provided documents, ensuring high-fidelity customer support responses.
 - **Beautiful UI**: An interactive, modern glassmorphism interface built with Next.js.
