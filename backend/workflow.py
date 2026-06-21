@@ -7,7 +7,7 @@ from llama_index.core.workflow import (
 )
 from llama_index.core.schema import NodeWithScore
 from llama_index.llms.openrouter import OpenRouter
-from engine import get_query_engine, get_index
+from engine import get_index
 import os
 from typing import List
 
@@ -32,7 +32,7 @@ class SafeGuardWorkflow(Workflow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.llm = OpenRouter(
-            model="google/gemini-2.0-flash-001",
+            model="google/gemini-2.5-flash",
             api_key=os.getenv("OPENROUTER_API_KEY")
         )
 

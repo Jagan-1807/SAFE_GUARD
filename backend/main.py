@@ -4,20 +4,29 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from workflow import SafeGuardWorkflow
 import asyncio
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI(title="SafeGuard AI API")
 
-# Add CORS middleware for Next.js frontend
+# CORS: use CORS_ORIGINS env var in production, default to localhost for dev
+cors_origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:3001"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create workflow once at startup (reuse across requests)
+workflow = SafeGuardWorkflow(timeout=60, verbose=True)
 
 class QueryRequest(BaseModel):
     query: str
@@ -25,7 +34,6 @@ class QueryRequest(BaseModel):
 @app.post("/chat")
 async def chat(request: QueryRequest):
     try:
-        workflow = SafeGuardWorkflow(timeout=60, verbose=True)
         result = await workflow.run(query=request.query)
         return {
             "query": request.query,

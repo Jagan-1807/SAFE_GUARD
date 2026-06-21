@@ -22,7 +22,7 @@
 
 ## 🏗️ Architecture
 
-- **Frontend**: Next.js 15, Tailwind CSS, Lucide Icons.
+- **Frontend**: Next.js 15, Vanilla CSS, Glassmorphism UI.
 - **Backend**: FastAPI, LlamaIndex, Python 3.10+.
 - **LLM**: Google Gemini 2.0 Flash (via OpenRouter).
 - **Vector Store**: ChromaDB (with BGE-small embeddings).

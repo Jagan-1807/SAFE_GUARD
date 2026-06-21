@@ -36,7 +36,7 @@ export default function Home() {
     setCurrentSteps(['Connecting to Multi-Agent Backend...']);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
       const response = await fetch(`${API_URL}/chat`, {
@@ -151,7 +151,7 @@ export default function Home() {
                 }
               }}
             />
-            <button onClick={handleSend} disabled={isLoading}>
+            <button className="send-btn" onClick={handleSend} disabled={isLoading}>
               {isLoading ? '...' : 'Send'}
             </button>
           </div>
