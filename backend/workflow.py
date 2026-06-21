@@ -9,6 +9,8 @@ from llama_index.core.schema import NodeWithScore
 from llama_index.llms.openrouter import OpenRouter
 from engine import get_index
 import os
+import json
+import re
 from typing import List
 
 # Events for the workflow
@@ -78,21 +80,30 @@ class SafeGuardWorkflow(Workflow):
     async def verify(self, ev: GenerateEvent) -> VerifyEvent:
         from engine import DEMO_MODE
         if DEMO_MODE:
-            # Simulate a "Hallucination Catch" if query mentions $10
             is_safe = "$10" not in ev.query
             feedback = "Simulated: Refined because the actual express shipping price is $15, not $10." if not is_safe else "SAFE"
             return VerifyEvent(is_safe=is_safe, feedback=feedback, response=ev.response, nodes=[], query=ev.query)
-            
+
         context = "\n".join([n.get_content() for n in ev.nodes])
         prompt = (
             f"Context:\n{context}\n\n"
             f"Proposed Answer: {ev.response}\n\n"
             "Identify any hallucinations or facts in the answer that are NOT supported by the context. "
-            "Reply with 'SAFE' if the answer is perfectly supported. Otherwise, explain the unsupported claims."
+            "Respond with ONLY a JSON object, no other text, in this exact format: "
+            '{"safe": true or false, "feedback": "explanation here"}'
         )
         verification_result = await self.llm.acomplete(prompt)
-        is_safe = "SAFE" in str(verification_result).upper()
-        return VerifyEvent(is_safe=is_safe, feedback=str(verification_result), response=ev.response, nodes=ev.nodes, query=ev.query)
+        raw = str(verification_result).strip()
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        try:
+            parsed = json.loads(match.group(0)) if match else {}
+            is_safe = bool(parsed.get("safe", False))
+            feedback = parsed.get("feedback", raw)
+        except json.JSONDecodeError:
+            # Fail safe: if the verifier's output can't be parsed, treat it as unverified
+            is_safe = False
+            feedback = f"Verifier returned unparseable output: {raw}"
+        return VerifyEvent(is_safe=is_safe, feedback=feedback, response=ev.response, nodes=ev.nodes, query=ev.query)
 
     @step
     async def refine(self, ev: VerifyEvent) -> StopEvent:
